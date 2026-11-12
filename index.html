@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Simulador NexPay</title>
+<style>
+:root{--bg:#F6F4EC;--card:#fff;--ink:#1F2A22;--mut:#5d675f;--line:#e2e0d6;--acc:#1F3D2B;--lima:#D5DE45;--neg:#b3261e;--pos:#1f7a3d;--bar:#1F3D2B;--rua:#c9a227}
+@media (prefers-color-scheme:dark){:root{--bg:#141815;--card:#1d221e;--ink:#eef0ea;--mut:#a3aba4;--line:#2f362f;--acc:#D5DE45;--neg:#ff8a80;--pos:#7fd49a;--bar:#9fbf8a;--rua:#e3c45a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:#1F3D2B;color:#fff;padding:22px 16px}
+header h1{margin:0 auto;max-width:1100px;font-size:22px}
+header p{margin:4px auto 0;max-width:1100px;color:#d9e3c8;font-size:14px}
+main{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px}
+main>section{min-width:0}
+@media (max-width:820px){main{grid-template-columns:minmax(0,1fr)}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 0 8px}
+h2:first-child{margin-top:0}
+label{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+label span{flex:1}
+input{width:118px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;text-align:right}
+input:focus{outline:2px solid var(--lima)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:560px){.cards{grid-template-columns:1fr 1fr}}
+.k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.k .t{font-size:12px;color:var(--mut)}
+.k .v{font-size:22px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.k .s{font-size:12px;color:var(--mut);margin-top:2px}
+.neg{color:var(--neg)}.pos{color:var(--pos)}
+.leg{display:flex;gap:16px;font-size:12px;color:var(--mut);margin:6px 0}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+svg{width:100%;height:auto;display:block}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;width:100%}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card)}
+thead th{color:var(--mut);font-weight:600}
+tr.b td{font-weight:700}
+.nota{font-size:13px;color:var(--mut)}
+.nota p{margin:6px 0}
+#fixo{display:none}
+@media (max-width:820px){#fixo{display:flex;position:sticky;top:0;z-index:5;background:#1F3D2B;color:#fff;padding:8px 16px;gap:14px;font-size:13px;justify-content:space-between}#fixo b{color:#D5DE45;font-size:15px;display:block}}
+button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<header><h1>Simulador NexPay</h1><p>Mude os números das premissas. O resultado se recalcula na hora. Mês 1 = novembro de 2026.</p></header>
+<div id="fixo"></div>
+<main>
+<section class="box" id="form">
+<h2>Antecipação salarial</h2>
+<label><span>Colaboradores com conta</span><input data-k="base" type="number" step="50" value="2100"></label>
+<label><span>Tarifa por antecipação (R$)</span><input data-k="tarifa" type="number" step="1" value="89"></label>
+<label><span>Valor médio antecipado (R$)</span><input data-k="ticket" type="number" step="50" value="500"></label>
+<label><span>Antecipações por pessoa no mês</span><input data-k="freq" type="number" step="0.5" value="1"></label>
+<label><span>Adesão no 1º mês (%)</span><input data-k="ades0" type="number" step="5" value="40"></label>
+<label><span>Adesão-alvo (%)</span><input data-k="ades1" type="number" step="5" value="60"></label>
+<label><span>Meses até a adesão-alvo</span><input data-k="rampa" type="number" step="1" value="3"></label>
+<h2>Consignado</h2>
+<label><span>Mês em que começa</span><input data-k="cons_ini" type="number" step="1" value="3"></label>
+<label><span>Contratos no 1º mês</span><input data-k="cons_n0" type="number" step="10" value="300"></label>
+<label><span>Contratos novos por mês depois</span><input data-k="cons_n" type="number" step="5" value="30"></label>
+<label><span>Valor médio do contrato (R$)</span><input data-k="cons_tk" type="number" step="100" value="3000"></label>
+<label><span>Parcelas</span><input data-k="cons_prz" type="number" step="1" value="10"></label>
+<label><span>Taxa de juros (% ao mês)</span><input data-k="cons_tx" type="number" step="0.01" value="12.99"></label>
+<h2>Despesas por mês</h2>
+<label><span>Finscale + tecnologia (R$)</span><input data-k="fx_fin" type="number" step="500" value="25000"></label>
+<label><span>Fidúcia (R$)</span><input data-k="fx_fid" type="number" step="500" value="5000"></label>
+<label><span>Funcionários (R$)</span><input data-k="fx_func" type="number" step="500" value="4000"></label>
+<label><span>Aluguéis (R$)</span><input data-k="fx_alug" type="number" step="500" value="7000"></label>
+<label><span>Outras despesas (R$)</span><input data-k="fx_out" type="number" step="500" value="0"></label>
+<h2>Ajustes finos</h2>
+<label><span>Impostos sobre a receita (%)</span><input data-k="imp" type="number" step="0.5" value="16.33"></label>
+<label><span>Perda na antecipação (%)</span><input data-k="perda" type="number" step="0.5" value="1"></label>
+<label><span>Perda no consignado (%)</span><input data-k="cons_perda" type="number" step="0.5" value="1"></label>
+<label><span>Custo da Fidúcia por contrato (R$)</span><input data-k="cons_fee" type="number" step="5" value="50"></label>
+<label><span>Custo de cada conta por mês (R$)</span><input data-k="conta" type="number" step="0.1" value="4"></label>
+<label><span>Dinheiro disponível (R$, opcional)</span><input data-k="caixa" type="number" step="50000" value="" placeholder="0"></label>
+<p style="margin:12px 0 0"><button id="reset" type="button">Voltar aos valores de 12/11</button></p>
+</section>
+<section>
+<div class="cards" id="cards"></div>
+<div class="box" style="margin-top:12px">
+<h2>Lucro do mês e dinheiro na rua</h2>
+<div class="leg"><span><i style="background:var(--bar)"></i>Lucro ou prejuízo do mês</span><span><i style="background:var(--rua)"></i>Dinheiro na rua (antecipação + consignado)</span></div>
+<div id="chart"></div>
+</div>
+<div class="box" style="margin-top:12px">
+<h2>Mês a mês</h2>
+<div class="tw"><table id="tab"></table></div>
+</div>
+<div class="box nota" style="margin-top:12px">
+<h2>Como a conta é feita</h2>
+<p>Cada antecipação deixa a tarifa menos o imposto e a perda. As despesas do mês divididas por esse valor dão quantas antecipações empatam o mês.</p>
+<p>O dinheiro antecipado sai do caixa e volta no salário seguinte. No consignado, o valor emprestado sai na contratação e volta nas parcelas. A receita do consignado é o juro sobre o saldo que ainda está na rua.</p>
+<p>O investimento inicial já pago fica fora do resultado do mês.</p>
+</div>
+</section>
+</main>
+<script>
+const MESES=['nov/26','dez/26','jan/27','fev/27','mar/27','abr/27','mai/27','jun/27','jul/27','ago/27','set/27','out/27','nov/27','dez/27','jan/28','fev/28','mar/28','abr/28','mai/28','jun/28','jul/28','ago/28','set/28','out/28'];
+const PCT=['ades0','ades1','cons_tx','imp','perda','cons_perda'];
+const inputs=[...document.querySelectorAll('input[data-k]')];
+const DEF={};inputs.forEach(i=>DEF[i.dataset.k]=i.value);
+function ler(){const p={};inputs.forEach(i=>{let v=parseFloat(String(i.value).replace(',','.'));if(!isFinite(v))v=0;p[i.dataset.k]=PCT.includes(i.dataset.k)?v/100:v});return p}
+function calcular(p){
+  const N=24,m=[];let acum=0,saldoAnt=0;const emprest=[];
+  const prz=Math.max(1,Math.round(p.cons_prz)),i=p.cons_tx;
+  const fator=j=>{if(j>=prz)return 0;if(i===0)return 1-j/prz;return(Math.pow(1+i,prz)-Math.pow(1+i,j))/(Math.pow(1+i,prz)-1)};
+  const fixo=p.fx_fin+p.fx_fid+p.fx_func+p.fx_alug+p.fx_out;
+  for(let t=1;t<=N;t++){
+    const ades=t>=p.rampa?p.ades1:p.ades0+(p.ades1-p.ades0)*(t-1)/Math.max(1,p.rampa-1);
+    const ant=Math.round(p.base*ades*p.freq),vol=ant*p.ticket,tar=ant*p.tarifa;
+    const novos=t<p.cons_ini?0:(t===p.cons_ini?p.cons_n0:p.cons_n),emp=novos*p.cons_tk;emprest.push(emp);
+    let cart=0;for(let s=1;s<=t;s++)cart+=emprest[s-1]*fator(t-s);
+    const juros=saldoAnt*i,receita=tar+juros;
+    const res=receita-receita*p.imp-(vol*p.perda+emp*p.cons_perda)-p.base*p.conta-novos*p.cons_fee-fixo;
+    acum+=res;const rua=vol+cart;
+    m.push({t,mes:MESES[t-1],ades,ant,vol,tar,novos,emp,cart,juros,receita,res,acum,rua,caixa:(p.caixa||0)+acum-rua});
+    saldoAnt=cart;
+  }
+  const margem=p.tarifa*(1-p.imp)-p.ticket*p.perda,custos=fixo+p.base*p.conta;
+  return{m,margem,custos,empate:margem>0?Math.ceil(custos/margem):null};
+}
+const R=v=>(v<0?'−':'')+'R$ '+Math.abs(Math.round(v)).toLocaleString('pt-BR');
+const Nn=v=>Math.round(v).toLocaleString('pt-BR');
+function k(t,v,s,cls){return`<div class="k"><div class="t">${t}</div><div class="v ${cls||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`}
+function render(){
+  const p=ler(),r=calcular(p),m=r.m;
+  const l1=m.find(x=>x.res>0),pay=m.find(x=>x.acum>0),max=m.reduce((a,b)=>b.rua>a.rua?b:a);
+  const l12=m.slice(0,12).reduce((a,b)=>a+b.res,0),rec12=m.slice(0,12).reduce((a,b)=>a+b.receita,0);
+  const cmin=m.reduce((a,b)=>b.caixa<a.caixa?b:a);
+  let h=k('Antecipações por mês para empatar',r.empate?Nn(r.empate):'não empata',r.empate?`hoje: ${Nn(Math.round(p.base*p.ades1*p.freq))} com a adesão-alvo`:'a tarifa não cobre imposto e perda',r.empate&&p.base*p.ades1*p.freq>=r.empate?'pos':'neg')
+   +k('Primeiro mês com lucro',l1?l1.mes:'não em 24 meses',pay?`lucro acumulado positivo em ${pay.mes}`:'acumulado não fica positivo',l1?'pos':'neg')
+   +k('Lucro no mês 12',R(m[11].res),'',m[11].res>=0?'pos':'neg')
+   +k('Receita em 12 meses',R(rec12),'')
+   +k('Lucro em 12 meses',R(l12),'',l12>=0?'pos':'neg')
+   +k('Maior volume na rua',R(max.rua),`em ${max.mes}: dinheiro que sai e ainda não voltou`);
+  if(p.caixa>0)h+=k('Menor saldo de caixa',R(cmin.caixa),`em ${cmin.mes}`,cmin.caixa>=0?'pos':'neg');
+  document.getElementById('cards').innerHTML=h;
+  document.getElementById('fixo').innerHTML=`<span>Empate<b>${r.empate?Nn(r.empate):'—'}</b></span><span>Lucro 12 meses<b>${R(l12)}</b></span><span>Máx. na rua<b>${R(max.rua)}</b></span>`;
+  // gráfico
+  const W=720,H=260,pad=34,n=m.length,bw=(W-pad*2)/n;
+  const vals=m.map(x=>x.res).concat(m.map(x=>x.rua),[0]);
+  const top=Math.max(...vals),bot=Math.min(...vals),sc=v=>pad/2+(top-v)/(top-bot||1)*(H-pad*1.5);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lucro do mês e dinheiro na rua"><line x1="${pad}" x2="${W-pad/2}" y1="${sc(0)}" y2="${sc(0)}" stroke="currentColor" stroke-opacity=".25"/>`;
+  m.forEach((x,j)=>{const y=sc(Math.max(0,x.res)),hh=Math.abs(sc(x.res)-sc(0));s+=`<rect x="${pad+j*bw+2}" y="${y}" width="${bw-4}" height="${Math.max(1,hh)}" fill="${x.res<0?'var(--neg)':'var(--bar)'}"><title>${x.mes}: ${R(x.res)}</title></rect>`});
+  s+=`<polyline fill="none" stroke="var(--rua)" stroke-width="2.5" points="${m.map((x,j)=>`${pad+j*bw+bw/2},${sc(x.rua)}`).join(' ')}"/>`;
+  m.forEach((x,j)=>{if(j%3===0)s+=`<text x="${pad+j*bw+bw/2}" y="${H-4}" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">${x.mes}</text>`});
+  s+=`<text x="2" y="${sc(top)+4}" font-size="11" fill="currentColor" opacity=".6">${(top/1e6).toFixed(1)} mi</text></svg>`;
+  document.getElementById('chart').innerHTML=s;
+  // tabela
+  const linhas=[['Antecipações no mês','ant',Nn],['Dinheiro antecipado','vol',R],['Receita de tarifas','tar',R],['Contratos novos de consignado','novos',Nn],['Carteira do consignado','cart',R],['Receita de juros','juros',R],['Receita total','receita',R,1],['Lucro ou prejuízo do mês','res',R,1],['Lucro acumulado','acum',R],['Dinheiro na rua','rua',R]];
+  if(p.caixa>0)linhas.push(['Saldo de caixa','caixa',R,1]);
+  let t='<thead><tr><th></th>'+m.map(x=>`<th>${x.mes}</th>`).join('')+'</tr></thead><tbody>';
+  linhas.forEach(([lab,key,f,b])=>{t+=`<tr${b?' class="b"':''}><td>${lab}</td>`+m.map(x=>`<td class="${x[key]<0?'neg':''}">${f(x[key])}</td>`).join('')+'</tr>'});
+  document.getElementById('tab').innerHTML=t+'</tbody>';
+}
+inputs.forEach(i=>i.addEventListener('input',render));
+document.getElementById('reset').onclick=()=>{inputs.forEach(i=>i.value=DEF[i.dataset.k]);render()};
+render();
+</script>
+</body>
+</html>
